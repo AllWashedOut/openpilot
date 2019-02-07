@@ -637,12 +637,20 @@ def _decel_limit_multiplier(v_ego, lead):
     return 1.0
     
 def _jerk_limits(v_ego, lead, max_speed_kph, lead_last_seen_time_ms):
+  # Allow higher accel jerk at low speed, to get started
+  accel_jerk_by_speed = OrderedDict([
+    # (Speed in m/s, accel jerk)
+    (0, 0.18),
+    (9, 0.10)])
+  accel_jerk = _interp_map(v_ego, accel_jerk_by_speed)
+  
   # prevent high accel jerk near max speed
   near_max_speed_multipliers = OrderedDict([
     # (kph under max speed, accel jerk multiplier)
     (0, 0.01),
     (4, 1.0)])
   near_max_speed_multiplier = _interp_map(max_speed_kph - v_ego * CV.MS_TO_KPH, near_max_speed_multipliers)
+  accel_jerk *= near_max_speed_multiplier
   
   if _is_present(lead):
     # pick decel jerk based on how much time we have til collision
@@ -654,12 +662,12 @@ def _jerk_limits(v_ego, lead, max_speed_kph, lead_last_seen_time_ms):
       (8, -0.001)])
     decel_jerk = _interp_map(_sec_til_collision(lead), decel_jerk_map)
     safe_dist_m = _safe_distance_m(v_ego) 
-    accel_jerk_map = OrderedDict([
+    distance_multipliers = OrderedDict([
       # (distance in m, accel jerk)
       (0.8 * safe_dist_m, 0.01),
-      (2.8 * safe_dist_m, 0.11)])
-    accel_jerk = _interp_map(lead.dRel, accel_jerk_map)
-    accel_jerk *= near_max_speed_multiplier
+      (2.8 * safe_dist_m, 1.00)])
+    distance_multiplier = _interp_map(lead.dRel, distance_multipliers)
+    accel_jerk *= distance_multiplier
     return decel_jerk, accel_jerk
   else:
     # In the absence of a lead car
@@ -672,11 +680,6 @@ def _jerk_limits(v_ego, lead, max_speed_kph, lead_last_seen_time_ms):
       (0,    0.1),
       (2000, 1.0)])
     time_since_lead_seen_multiplier = _interp_map(time_since_lead_seen_ms, time_since_lead_seen_multipliers)
-    # Allow higher jerk at low speed, to get started
-    accel_jerk_by_speed = OrderedDict([
-      # (Speed in m/s, accel jerk)
-      (0,  0.18),
-      (12, 0.10)])
-    accel_jerk = _interp_map(v_ego, accel_jerk_by_speed)
-    accel_jerk *= near_max_speed_multiplier * time_since_lead_seen_multiplier
+    accel_jerk *= time_since_lead_seen_multiplier
+    
     return decel_jerk, accel_jerk
