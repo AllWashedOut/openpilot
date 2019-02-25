@@ -142,8 +142,8 @@ def max_v_in_mapped_curve_ms(map_data, pedal_set_speed_kph):
     time_to_turn_s = max(0, map_data.distToTurn / max(pedal_set_speed_ms, 1.))
     v_approaching_turn_ms = OrderedDict([
       # seconds til turn, max allowed velocity
-      (8, pedal_set_speed_ms),
-      (0, v_curvature_ms)
+      (0, pedal_set_speed_ms),
+      (8, v_curvature_ms)
     ])
     return _interp_map(time_to_turn_s, v_approaching_turn_ms)
   else:
