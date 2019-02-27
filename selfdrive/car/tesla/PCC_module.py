@@ -24,10 +24,10 @@ _DT_MPC = 0.05  # 20Hz
 
 # TODO: these should end up in values.py at some point, probably variable by trim
 # Accel limits
-MAX_PEDAL_VALUE = 112.
+MAX_PEDAL_VALUE = 90. # How far OP may press the accelerator on a scale of 100.
 PEDAL_HYST_GAP = 1.0  # don't change pedal command for small oscilalitons within this value
-# Cap the pedal to go from 0 to max in 4 seconds
-PEDAL_MAX_UP = MAX_PEDAL_VALUE * _DT / 4
+# Cap the pedal to go from 0 to max in 5 seconds
+PEDAL_MAX_UP = MAX_PEDAL_VALUE * _DT / 5
 # Cap the pedal to go from max to 0 in 0.4 seconds
 PEDAL_MAX_DOWN = MAX_PEDAL_VALUE * _DT / 0.4
 
